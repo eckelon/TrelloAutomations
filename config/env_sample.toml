@@ -1,0 +1,6 @@
+[auth]
+api_key = "xxx"
+token = "xxx"
+[board]
+board_id = "xxx"
+triage_list_id = "xxx"

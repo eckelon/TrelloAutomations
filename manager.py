@@ -1,38 +1,28 @@
 from requests import request
 
-import os
+from config.config import api_key, board_id, token, triage_list_id
 
-trello_api_key = os.environ['TRELLO_API_KEY']
-trello_api_token = os.environ['TRELLO_API_TOKEN']
+get_board_cards_url = f"https://api.trello.com/1/boards/{board_id}/cards"
+get_triage_cards_url = f"https://api.trello.com/1/lists/{triage_list_id}/cards"
 
-triage_id = os.enenviron['triage_list_id']
-board_id = os.enenviron['board_id']
+query = {"key": api_key, "token": token}
+headers = {"Accept": "application/json"}
 
+triage_cards_response = request(
+    "GET", get_triage_cards_url, params=query, headers=headers
+).json()
 
-get_triage_cards_url = f'https://api.trello.com/1/lists/{triage_id}/cards'
-get_board_cards_url = f'https://api.trello.com/1/boards/{board_id}/cards'
+board_cards_response = request(
+    "GET", get_board_cards_url, params=query, headers=headers
+).json()
 
-query = {
-  'key': trello_api_key,
-  'token': trello_api_token
-}
+triage_cards_ids = map(lambda card: card["id"], triage_cards_response)
+triage_cards_names = map(lambda card: card["name"], triage_cards_response)
 
-headers = {
-  "Accept": "application/json"
-}
+board_cards_without_triage = filter(
+    lambda card: card["id"] not in triage_cards_ids, board_cards_response
+)
 
-triage_cards_response = request( "GET", get_triage_cards_url, params=query, headers=headers ).json()
-board_cards_response = request("GET", get_board_cards_url, params=query, headers=headers).json()
-
-triage_cards_ids = map(lambda card: card['id'], triage_cards_response)
-triage_cards_names = map(lambda card: card['name'], triage_cards_response)
-
-# print(list(triage_cards_names))
-
-board_cards_without_triage = filter(lambda card: card['id'] not in triage_cards_ids , board_cards_response)
-print(list(board_cards_without_triage))
-
-
-# duplicated_cards = filter(lambda card: card['name'] in triage_cards_names, board_cards_without_triage)
-
-# print(list(duplicated_cards))
+duplicated_cards = filter(
+    lambda card: card["name"] in triage_cards_names, board_cards_without_triage
+)
