@@ -16,13 +16,31 @@ board_cards_response = request(
     "GET", get_board_cards_url, params=query, headers=headers
 ).json()
 
-triage_cards_ids = map(lambda card: card["id"], triage_cards_response)
-triage_cards_names = map(lambda card: card["name"], triage_cards_response)
-
-board_cards_without_triage = filter(
-    lambda card: card["id"] not in triage_cards_ids, board_cards_response
+board_cards = map(
+    lambda card: {"name": card["name"], "id": card["id"]}, board_cards_response
+)
+triage_cards = map(
+    lambda card: {"name": card["name"], "id": card["id"]}, triage_cards_response
 )
 
-duplicated_cards = filter(
-    lambda card: card["name"] in triage_cards_names, board_cards_without_triage
+board_cards_not_in_triage = map(
+    lambda card: card["name"],
+    filter(lambda card: card not in triage_cards, board_cards),
 )
+
+cards_ids_in_triage_already_in_board = list(
+    map(
+        lambda card: card["id"],
+        filter(lambda card: card["name"] in board_cards_not_in_triage, triage_cards),
+    )
+)
+# Let's delete duplicated cards
+for card_id in cards_ids_in_triage_already_in_board:
+    deleted = request(
+        "DELETE",
+        f"https://api.trello.com/1/cards/{card_id}",
+        params=query,
+        headers=headers,
+    ).json()
+
+    print(deleted)

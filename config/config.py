@@ -5,7 +5,7 @@ token = None
 board_id = None
 triage_list_id = None
 
-with open("env.toml", mode="rb") as fp:
+with open("config/env.toml", mode="rb") as fp:
     config = tomli.load(fp)
     auth = config["auth"]
     board = config["board"]
