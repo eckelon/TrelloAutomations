@@ -1,46 +1,50 @@
-from requests import request
-
-from config.config import api_key, board_id, token, triage_list_id
-
-get_board_cards_url = f"https://api.trello.com/1/boards/{board_id}/cards"
-get_triage_cards_url = f"https://api.trello.com/1/lists/{triage_list_id}/cards"
-
-query = {"key": api_key, "token": token}
-headers = {"Accept": "application/json"}
-
-triage_cards_response = request(
-    "GET", get_triage_cards_url, params=query, headers=headers
-).json()
-
-board_cards_response = request(
-    "GET", get_board_cards_url, params=query, headers=headers
-).json()
-
-board_cards = map(
-    lambda card: {"name": card["name"], "id": card["id"]}, board_cards_response
-)
-triage_cards = map(
-    lambda card: {"name": card["name"], "id": card["id"]}, triage_cards_response
+from config.config import board_id, triage_list_id
+from trello.trello_actions import (
+    delete_cards,
+    get_cards_from_board,
+    get_cards_from_list,
 )
 
-board_cards_not_in_triage = map(
-    lambda card: card["name"],
-    filter(lambda card: card not in triage_cards, board_cards),
-)
 
-cards_ids_in_triage_already_in_board = list(
-    map(
-        lambda card: card["id"],
-        filter(lambda card: card["name"] in board_cards_not_in_triage, triage_cards),
+def get_cards_already_in_project():
+    board_cards = list(
+        map(
+            lambda card: {"name": card["name"], "id": card["id"]},
+            get_cards_from_board(board_id),
+        )
     )
-)
-# Let's delete duplicated cards
-for card_id in cards_ids_in_triage_already_in_board:
-    deleted = request(
-        "DELETE",
-        f"https://api.trello.com/1/cards/{card_id}",
-        params=query,
-        headers=headers,
-    ).json()
 
-    print(deleted)
+    triage_cards = list(
+        map(
+            lambda card: {"name": card["name"], "id": card["id"]},
+            get_cards_from_list(triage_list_id),
+        )
+    )
+
+    board_cards_already_in_project = list(
+        map(
+            lambda card: {"name": card["name"], "id": card["id"]},
+            filter(lambda card: card not in triage_cards, board_cards),
+        )
+    )
+
+    card_names_in_project = list(
+        map(lambda card: card["name"], board_cards_already_in_project)
+    )
+
+    cards_in_triage_already_in_board = list(
+        filter(lambda card: card["name"] in card_names_in_project, triage_cards)
+    )
+
+    return cards_in_triage_already_in_board
+
+
+def delete_duplicated_cards():
+    duplicated_card_ids = list(
+        map(lambda card: card["id"], get_cards_already_in_project())
+    )
+
+    delete_cards(duplicated_card_ids)
+
+
+delete_duplicated_cards()

@@ -4,3 +4,4 @@ token = "xxx"
 [board]
 board_id = "xxx"
 triage_list_id = "xxx"
+backlog_list_id = "xxx"

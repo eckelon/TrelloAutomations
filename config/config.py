@@ -15,3 +15,4 @@ with open("config/env.toml", mode="rb") as fp:
 
     board_id = board["board_id"]
     triage_list_id = board["triage_list_id"]
+    backlog_list_id = board["backlog_list_id"]
