@@ -3,13 +3,8 @@ from typing import TypedDict
 from requests import Response
 
 from config.config import backlog_list_id, triage_list_id
-from trello.trello_actions import (
-    archive_all_cards_in_list,
-    delete_card,
-    move_card_to_list,
-)
-
-SimpleCard = TypedDict("SimpleCard", {"id": str, "name": str})
+from trello.trello_actions import (archive_all_cards_in_list, delete_card,
+                                   move_card_to_list)
 
 
 def delete_cards(card_ids: list[str]) -> list[Response]:
