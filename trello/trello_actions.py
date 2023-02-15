@@ -1,29 +1,31 @@
-from config.config import backlog_list_id, triage_list_id
-from trello.api_connector import do_delete, do_get, do_put
+from typing import Any
 
-get_triage_cards_url = f"https://api.trello.com/1/lists/{triage_list_id}/cards"
+from requests import Response
+
+from trello.api_connector import do_delete, do_get, do_post, do_put
 
 
-def get_cards_from_list(list_id: str) -> list:
+def get_cards_from_list(list_id: str) -> Any:
     url = f"https://api.trello.com/1/lists/{list_id}/cards"
     return do_get(url)
 
 
-def get_cards_from_board(board_id: str) -> list:
+def get_cards_from_board(board_id: str) -> Any:
     url = f"https://api.trello.com/1/boards/{board_id}/cards"
     return do_get(url)
 
 
-def delete_card(card_id: str) -> dict:
+def delete_card(card_id: str) -> Response:
     print(f"deleting card {card_id}...")
     url = f"https://api.trello.com/1/cards/{card_id}"
     return do_delete(url)
 
 
-def delete_cards(card_ids: list) -> list:
-    return list(map(delete_card, card_ids))
-
-
-def move_card_to_backlog(card_id):
+def move_card_to_list(card_id: str, list_id: str):
     url = f"https://api.trello.com/1/cards/{card_id}"
-    return do_put(url, {"idList": backlog_list_id})
+    return do_put(url, {"idList": list_id})
+
+
+def archive_all_cards_in_list(list_id: str) -> Response:
+    url = f"https://api.trello.com/1/lists/{list_id}/archiveAllCards"
+    return do_post(url, {})
